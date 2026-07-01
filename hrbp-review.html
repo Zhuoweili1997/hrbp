@@ -27,7 +27,7 @@
   .btn-outline { background: #fff; color: #3D5A4C; border: 1.5px solid #3D5A4C !important; }
   .btn-row { display: flex; gap: 12px; margin-top: 8px; }
   .btn-row .btn { margin-top: 0; }
-  textarea, input { width: 100%; border: 1.5px solid #E5E7EB; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #1A1A1A; background: #fff; outline: none; font-family: inherit; line-height: 1.6; resize: vertical; }
+  textarea, input[type=text], input[type=password] { width: 100%; border: 1.5px solid #E5E7EB; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #1A1A1A; background: #fff; outline: none; font-family: inherit; line-height: 1.6; resize: vertical; }
   textarea:focus, input:focus { border-color: #3D5A4C; }
   .tag { background: #E0F2FE; color: #0369A1; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; margin-right: 4px; margin-bottom: 4px; display: inline-block; }
   .score-bar-wrap { display: flex; align-items: center; gap: 8px; }
@@ -35,7 +35,6 @@
   .score-bar-fill { background: #3D5A4C; height: 100%; border-radius: 99px; transition: width 0.5s; }
   .score-label { font-size: 12px; color: #6B7280; min-width: 32px; }
   .error-box { background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 8px; padding: 12px; font-size: 12px; color: #991B1B; margin-top: 12px; word-break: break-all; display: none; }
-  .success-box { background: #EAF0EC; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; font-size: 13px; color: #3D5A4C; }
   .warn-box { background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 10px; padding: 14px; margin-bottom: 14px; font-size: 13px; color: #92400E; }
   .spinner { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 16px; }
   .spin { width: 36px; height: 36px; border: 3px solid #E5E7EB; border-top-color: #3D5A4C; border-radius: 50%; animation: spin 1s linear infinite; }
@@ -54,13 +53,12 @@
   .history-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; cursor: pointer; }
   .history-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .history-detail { margin-top: 14px; border-top: 1px solid #E5E7EB; padding-top: 14px; display: none; }
-  .detail-q { font-size: 11px; color: #6B7280; margin-bottom: 2px; }
-  .detail-a { font-size: 13px; color: #1A1A1A; line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap; }
   .api-setup { background: #fff; border: 1.5px solid #3D5A4C; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
   .api-note { font-size: 12px; color: #6B7280; margin-top: 8px; line-height: 1.6; }
   .api-status { font-size: 12px; margin-top: 8px; }
-  .api-status.ok { color: #3D5A4C; }
+  .api-status.ok { color: #3D5A4C; font-weight: 600; }
   .api-status.err { color: #991B1B; }
+  .sync-badge { font-size: 11px; background: #EAF0EC; color: #3D5A4C; border-radius: 4px; padding: 2px 6px; margin-left: 6px; }
 </style>
 </head>
 <body>
@@ -73,14 +71,14 @@
     <p class="muted" style="margin-bottom:24px">体系来自复盘，不来自执行。</p>
 
     <div class="api-setup" id="api-setup-home">
-      <div style="font-size:13px;font-weight:600;margin-bottom:8px">🔑 设置 API Key</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">🔑 设置 Anthropic API Key</div>
       <input type="password" id="api-key-input" placeholder="sk-ant-..." />
-      <div class="api-note">在 console.anthropic.com 免费获取。Key只保存在你的浏览器里，不会上传任何地方。</div>
+      <div class="api-note">在 console.anthropic.com 免费获取。Key只保存在你的浏览器里。</div>
       <div class="api-status" id="api-status"></div>
       <button class="btn btn-primary" style="margin-top:12px;padding:12px 0;font-size:14px" onclick="saveApiKey()">保存</button>
     </div>
 
-    <div id="home-stats" style="display:none"></div>
+    <div id="home-stats"></div>
 
     <div style="display:flex;gap:10px;margin-bottom:12px">
       <button class="btn btn-primary" style="padding:15px 0;font-size:14px" onclick="showPage('voice')">🎙 口述模式</button>
@@ -104,7 +102,7 @@
     </div>
     <textarea id="voice-input" rows="10" placeholder="就像跟朋友说话一样，随便说说今天怎么样…"></textarea>
     <div class="error-box" id="voice-error"></div>
-    <button class="btn btn-primary" style="margin-top:16px" id="voice-btn" onclick="handleVoice()">AI帮我整理 →</button>
+    <button class="btn btn-primary" style="margin-top:16px" onclick="handleVoice()">AI帮我整理 →</button>
   </div>
 
   <!-- VOICE REVIEW -->
@@ -142,7 +140,7 @@
 
   <!-- HISTORY -->
   <div class="page" id="page-history">
-    <h2>历史记录</h2>
+    <h2>历史记录 <span class="sync-badge">☁️ 云同步</span></h2>
     <p class="muted" id="history-count" style="margin-bottom:20px;margin-top:4px"></p>
     <div id="history-list"></div>
   </div>
@@ -161,7 +159,7 @@
     <div id="board-content"></div>
   </div>
 
-  <!-- LOADING overlay -->
+  <!-- LOADING -->
   <div class="page" id="page-loading">
     <div class="spinner">
       <div class="spin"></div>
@@ -179,45 +177,90 @@
 </div>
 
 <script>
-// ── State ──────────────────────────────────────────────────────────────────
+// ── Config ─────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://izjnfknpdlbpwdztmbkr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_UsXLmloF24mMRuJiw39Dgg_U6ea9o2b';
+
 const QUESTIONS = [
-  { id: "tasks", label: "今天处理了哪些事情？", placeholder: "关键词即可" },
-  { id: "realProblem", label: "有没有停下来问「真正的问题是什么」？", placeholder: "有的话描述一下；没有也可以现在想一个" },
-  { id: "risk", label: "今天有没有提前想到风险，或事后发现没想到的风险？", placeholder: "比如某封邮件发出去才发现漏了什么" },
-  { id: "pattern", label: "今天有没有「赶紧做完就好」的时刻？", placeholder: "诚实描述当时的感觉" },
-  { id: "insight", label: "今天最大的收获或发现是什么？", placeholder: "工作方法、对某人的观察、对自己的认识" },
+  { id: 'tasks', label: '今天处理了哪些事情？', placeholder: '关键词即可' },
+  { id: 'realProblem', label: '有没有停下来问「真正的问题是什么」？', placeholder: '有的话描述一下；没有也可以现在想一个' },
+  { id: 'risk', label: '今天有没有提前想到风险，或事后发现没想到的风险？', placeholder: '比如某封邮件发出去才发现漏了什么' },
+  { id: 'pattern', label: '今天有没有「赶紧做完就好」的时刻？', placeholder: '诚实描述当时的感觉' },
+  { id: 'insight', label: '今天最大的收获或发现是什么？', placeholder: '工作方法、对某人的观察、对自己的认识' },
 ];
 
 const MOD_COLORS = [
-  ["#E0F2FE","#0369A1"],["#F0FDF4","#166534"],["#FEF3C7","#92400E"],
-  ["#FDF2F8","#9D174D"],["#F0F4FF","#3730A3"],["#FFF7ED","#C2410C"],
+  ['#E0F2FE','#0369A1'],['#F0FDF4','#166534'],['#FEF3C7','#92400E'],
+  ['#FDF2F8','#9D174D'],['#F0F4FF','#3730A3'],['#FFF7ED','#C2410C'],
 ];
 
 let entries = [];
-let currentAnswers = {};
-let expandedId = null;
-let prevPage = null;
+// stable user id stored in localStorage
+let userId = localStorage.getItem('hrbp-user-id');
+if (!userId) { userId = 'u_' + Math.random().toString(36).slice(2); localStorage.setItem('hrbp-user-id', userId); }
 
 // ── Init ───────────────────────────────────────────────────────────────────
-window.onload = function() {
-  entries = JSON.parse(localStorage.getItem('hrbp-entries') || '[]');
+window.onload = async function() {
   const savedKey = localStorage.getItem('hrbp-api-key') || '';
   if (savedKey) {
     document.getElementById('api-key-input').value = savedKey;
     document.getElementById('api-status').textContent = '✓ API Key 已设置';
     document.getElementById('api-status').className = 'api-status ok';
+    document.getElementById('api-setup-home').style.display = 'none';
   }
-  document.getElementById('form-date').textContent = new Date().toLocaleDateString('zh-CN', {year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  document.getElementById('form-date').textContent = new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
   renderFormQuestions();
   renderVoiceReviewQuestions();
-  updateHistoryCount();
+  await loadEntries();
   renderHomeStats();
 };
 
-// ── API ────────────────────────────────────────────────────────────────────
-function getApiKey() {
-  return localStorage.getItem('hrbp-api-key') || document.getElementById('api-key-input').value.trim();
+// ── Supabase ───────────────────────────────────────────────────────────────
+async function sbFetch(path, options={}) {
+  const res = await fetch(SUPABASE_URL + path, {
+    ...options,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal',
+      ...(options.headers||{}),
+    },
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
+
+async function loadEntries() {
+  try {
+    const data = await sbFetch(`/rest/v1/entries?user_id=eq.${userId}&order=date.desc`, { method: 'GET', headers: { 'Prefer': '' } });
+    entries = data || [];
+    updateHistoryCount();
+  } catch(e) {
+    console.error('Load error:', e);
+    entries = [];
+  }
+}
+
+async function saveEntryToCloud(entry) {
+  await sbFetch('/rest/v1/entries', {
+    method: 'POST',
+    body: JSON.stringify({
+      id: entry.id,
+      user_id: userId,
+      date: entry.date,
+      answers: entry.answers,
+      analysis: entry.analysis,
+    }),
+  });
+}
+
+// ── Anthropic API ──────────────────────────────────────────────────────────
+function getApiKey() { return localStorage.getItem('hrbp-api-key') || ''; }
 
 function saveApiKey() {
   const key = document.getElementById('api-key-input').value.trim();
@@ -225,6 +268,7 @@ function saveApiKey() {
   localStorage.setItem('hrbp-api-key', key);
   document.getElementById('api-status').textContent = '✓ 已保存！';
   document.getElementById('api-status').className = 'api-status ok';
+  document.getElementById('api-setup-home').style.display = 'none';
   renderHomeStats();
 }
 
@@ -266,10 +310,9 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const navId = 'nav-' + (NAV_PAGES.includes(name) ? name : (name === 'voice' || name === 'voice-review' ? 'form' : 'home'));
-  const navEl = document.getElementById(navId);
+  const navKey = NAV_PAGES.includes(name) ? name : (name === 'voice' || name === 'voice-review' ? 'form' : 'home');
+  const navEl = document.getElementById('nav-' + navKey);
   if (navEl) navEl.classList.add('active');
-
   if (name === 'history') renderHistory();
   if (name === 'insights') renderInsights();
   if (name === 'board') renderBoard();
@@ -284,48 +327,35 @@ function showLoading(msg) {
 // ── Home ───────────────────────────────────────────────────────────────────
 function renderHomeStats() {
   const el = document.getElementById('home-stats');
-  const setup = document.getElementById('api-setup-home');
-  const key = getApiKey();
-  if (key) {
-    setup.style.display = 'none';
-  }
-  if (!entries.length) { el.style.display = 'none'; return; }
+  if (!entries.length) { el.innerHTML = ''; return; }
   const scores = entries.filter(e => e.analysis?.modeScore).map(e => e.analysis.modeScore);
   const avg = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : null;
   const latest = entries[0];
   let html = '';
-  if (avg) {
-    html += `<div class="accent-card"><div style="font-size:12px;color:#3D5A4C;font-weight:600;margin-bottom:8px">业务伙伴思维均分 · ${entries.length}条记录</div><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:${avg*10}%"></div></div><span class="score-label">${avg}/10</span></div></div>`;
-  }
+  if (avg) html += `<div class="accent-card"><div style="font-size:12px;color:#3D5A4C;font-weight:600;margin-bottom:8px">业务伙伴思维均分 · ${entries.length}条记录</div><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:${avg*10}%"></div></div><span class="score-label">${avg}/10</span></div></div>`;
   if (latest) {
     const tags = (latest.analysis?.hrModules||[]).slice(0,3).map(m=>`<span class="tag">${m}</span>`).join('');
     const insight = latest.answers?.insight ? `<p style="font-size:13px;color:#1A1A1A;margin:6px 0 0;line-height:1.5">💡 ${latest.answers.insight.slice(0,80)}</p>` : '';
     html += `<div class="card"><div class="card-label">上次复盘 · ${fmtDate(latest.date)}</div><div>${tags}</div>${insight}</div>`;
   }
   el.innerHTML = html;
-  el.style.display = 'block';
 }
 
 // ── Form ───────────────────────────────────────────────────────────────────
 function renderFormQuestions() {
-  const el = document.getElementById('form-questions');
-  el.innerHTML = QUESTIONS.map((q,i) => `
-    <div class="q-wrap">
-      <label class="q-label">${i+1}. ${q.label}</label>
-      <textarea id="form-${q.id}" rows="3" placeholder="${q.placeholder}"></textarea>
-    </div>`).join('');
+  document.getElementById('form-questions').innerHTML = QUESTIONS.map((q,i) =>
+    `<div class="q-wrap"><label class="q-label">${i+1}. ${q.label}</label><textarea id="form-${q.id}" rows="3" placeholder="${q.placeholder}"></textarea></div>`
+  ).join('');
 }
 
 async function handleForm() {
   const answers = {};
   QUESTIONS.forEach(q => { answers[q.id] = document.getElementById('form-'+q.id).value.trim(); });
-  const filled = Object.values(answers).some(v=>v);
-  if (!filled) return;
-  currentAnswers = answers;
+  if (!Object.values(answers).some(v=>v)) return;
   showLoading('AI分析中…');
   try {
     const analysis = await analyzeSingle(answers);
-    const entry = saveEntry(answers, analysis);
+    await saveEntry(answers, analysis);
     renderResult(analysis);
     showPage('result');
   } catch(e) {
@@ -338,12 +368,9 @@ async function handleForm() {
 
 // ── Voice ──────────────────────────────────────────────────────────────────
 function renderVoiceReviewQuestions() {
-  const el = document.getElementById('voice-review-questions');
-  el.innerHTML = QUESTIONS.map((q,i) => `
-    <div class="q-wrap">
-      <label class="q-label">${i+1}. ${q.label}</label>
-      <textarea id="vr-${q.id}" rows="3"></textarea>
-    </div>`).join('');
+  document.getElementById('voice-review-questions').innerHTML = QUESTIONS.map((q,i) =>
+    `<div class="q-wrap"><label class="q-label">${i+1}. ${q.label}</label><textarea id="vr-${q.id}" rows="3"></textarea></div>`
+  ).join('');
 }
 
 async function handleVoice() {
@@ -353,21 +380,25 @@ async function handleVoice() {
   const errEl = document.getElementById('voice-error');
   errEl.style.display = 'none';
   try {
-    const prompt = `你是HRBP成长教练。用户口述了今天工作情况如下：\n\n${raw}\n\n请整理成结构化复盘，把执行者语言升级为业务伙伴语言。只输出JSON，不要任何其他文字或markdown标记，JSON格式如下：\n{"tasks":"...","realProblem":"...","risk":"...","pattern":"...","insight":"...","upgradeNotes":["升级点1","升级点2"]}`;
-    const result = await callClaude(prompt);
+    const lines = [
+      '你是HRBP成长教练。用户口述了今天工作情况如下：',
+      '',
+      raw,
+      '',
+      '请整理成结构化复盘，把执行者语言升级为业务伙伴语言。',
+      '只输出JSON对象，不要任何其他文字或markdown：',
+      '{"tasks":"...","realProblem":"...","risk":"...","pattern":"...","insight":"...","upgradeNotes":["升级点1","升级点2"]}',
+    ];
+    const result = await callClaude(lines.join('\n'));
     const parsed = parseJSON(result);
     showPage('voice-review');
     if (parsed) {
-      QUESTIONS.forEach(q => {
-        const el = document.getElementById('vr-'+q.id);
-        if (el) el.value = parsed[q.id] || '';
-      });
+      QUESTIONS.forEach(q => { const el = document.getElementById('vr-'+q.id); if(el) el.value = parsed[q.id]||''; });
       if (parsed.upgradeNotes?.length) {
         document.getElementById('upgrade-notes-block').style.display = 'block';
         document.getElementById('upgrade-notes-content').innerHTML = parsed.upgradeNotes.map(n=>`• ${n}`).join('<br>');
       }
     } else {
-      // fallback: put raw text in tasks
       document.getElementById('vr-tasks').value = raw;
     }
   } catch(e) {
@@ -380,36 +411,41 @@ async function handleVoice() {
 async function saveVoiceReview() {
   const answers = {};
   QUESTIONS.forEach(q => { answers[q.id] = document.getElementById('vr-'+q.id).value.trim(); });
-  currentAnswers = answers;
   showLoading('分析并保存中…');
   try {
     const analysis = await analyzeSingle(answers);
-    saveEntry(answers, analysis);
+    await saveEntry(answers, analysis);
     renderResult(analysis);
-    showPage('result');
   } catch(e) {
-    saveEntry(answers, null);
+    await saveEntry(answers, null);
     renderResult(null);
-    showPage('result');
   }
+  showPage('result');
 }
 
 // ── Analyze ────────────────────────────────────────────────────────────────
 async function analyzeSingle(answers) {
   const text = QUESTIONS.map(q => answers[q.id] ? `[${q.label}]\n${answers[q.id]}` : null).filter(Boolean).join('\n\n');
-  const prompt = `你是HRBP成长教练。以下是用户今天的复盘内容：\n\n${text}\n\n请分析并只输出JSON，不要任何其他文字：\n{"mode":"executor或partner","modeScore":数字1到10,"hrModules":["涉及的HR模块，从以下选：Recruiting,Employee Relations,Compensation & Benefits,L&D,Workforce Planning,Stakeholder Management,Legal & Compliance,Onboarding,Performance Management,HRBP Strategy,Other"],"patterns":["行为模式，最多3条"],"highlight":"最值得注意的时刻","tomorrow":"明天一个具体建议","narrative":"给用户的反馈，2到3句话，像同事一样直接温暖"}`;
-  const raw = await callClaude(prompt);
+  const lines = [
+    '你是HRBP成长教练。以下是用户今天的复盘内容：',
+    '',
+    text,
+    '',
+    '请分析并只输出JSON，不要任何其他文字：',
+    '{"mode":"executor或partner","modeScore":数字1到10,"hrModules":["涉及HR模块，从以下选：Recruiting,Employee Relations,Compensation & Benefits,L&D,Workforce Planning,Stakeholder Management,Legal & Compliance,Onboarding,Performance Management,HRBP Strategy,Other"],"patterns":["行为模式最多3条"],"highlight":"最值得注意的时刻","tomorrow":"明天一个具体建议","narrative":"给用户反馈2到3句话像同事一样直接温暖"}',
+  ];
+  const raw = await callClaude(lines.join('\n'));
   const parsed = parseJSON(raw);
   if (!parsed) throw new Error('AI返回格式有误，请重试');
   return parsed;
 }
 
 // ── Storage ────────────────────────────────────────────────────────────────
-function saveEntry(answers, analysis) {
+async function saveEntry(answers, analysis) {
   const entry = { id: Date.now().toString(), date: new Date().toISOString(), answers, analysis };
   entries.unshift(entry);
-  localStorage.setItem('hrbp-entries', JSON.stringify(entries));
   updateHistoryCount();
+  try { await saveEntryToCloud(entry); } catch(e) { console.error('Cloud save failed:', e); }
   return entry;
 }
 
@@ -421,10 +457,7 @@ function updateHistoryCount() {
 // ── Result ─────────────────────────────────────────────────────────────────
 function renderResult(analysis) {
   const el = document.getElementById('result-content');
-  if (!analysis) {
-    el.innerHTML = '<div class="warn-box">AI分析失败，但记录已保存。</div>';
-    return;
-  }
+  if (!analysis) { el.innerHTML = '<div class="warn-box">AI分析失败，但记录已保存到云端。</div>'; return; }
   const tags = (analysis.hrModules||[]).map(m=>`<span class="tag">${m}</span>`).join('');
   const patterns = (analysis.patterns||[]).map(p=>`<div style="font-size:13px;line-height:1.8">• ${p}</div>`).join('');
   el.innerHTML = `
@@ -433,41 +466,32 @@ function renderResult(analysis) {
       <div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:${(analysis.modeScore||5)*10}%"></div></div><span class="score-label">${analysis.modeScore||'?'}/10</span></div>
       <div style="font-size:12px;color:#6B7280;margin-top:6px">${analysis.mode==='partner'?'今天更多是业务伙伴模式 ✓':'今天更多是执行者模式'}</div>
     </div>
-    ${tags ? `<div class="card"><div class="card-label">涉及HR模块</div><div>${tags}</div></div>` : ''}
-    ${patterns ? `<div class="card"><div class="card-label">识别出的行为模式</div>${patterns}</div>` : ''}
+    ${tags?`<div class="card"><div class="card-label">涉及HR模块</div><div>${tags}</div></div>`:''}
+    ${patterns?`<div class="card"><div class="card-label">识别出的行为模式</div>${patterns}</div>`:''}
     <div class="ai-card">
       <div style="font-size:12px;color:#4F46E5;font-weight:600;margin-bottom:8px">🤖 AI反馈</div>
-      ${analysis.narrative ? `<p style="font-size:14px;line-height:1.7;margin-bottom:8px">${analysis.narrative}</p>` : ''}
-      ${analysis.highlight ? `<div style="font-size:13px;color:#6B7280">💡 ${analysis.highlight}</div>` : ''}
-      ${analysis.tomorrow ? `<div style="font-size:13px;color:#3D5A4C;font-weight:600;margin-top:8px">→ 明天：${analysis.tomorrow}</div>` : ''}
+      ${analysis.narrative?`<p style="font-size:14px;line-height:1.7;margin-bottom:8px">${analysis.narrative}</p>`:''}
+      ${analysis.highlight?`<div style="font-size:13px;color:#6B7280">💡 ${analysis.highlight}</div>`:''}
+      ${analysis.tomorrow?`<div style="font-size:13px;color:#3D5A4C;font-weight:600;margin-top:8px">→ 明天：${analysis.tomorrow}</div>`:''}
     </div>`;
 }
 
 // ── History ────────────────────────────────────────────────────────────────
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'});
-}
-function fmtShort(iso) {
-  return new Date(iso).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'});
-}
+function fmtDate(iso) { return new Date(iso).toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'}); }
+function fmtShort(iso) { return new Date(iso).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}); }
 
-function renderHistory() {
-  document.getElementById('history-count').textContent = `共 ${entries.length} 条`;
+async function renderHistory() {
+  document.getElementById('history-count').textContent = `共 ${entries.length} 条 · 所有设备共享`;
   const el = document.getElementById('history-list');
   if (!entries.length) { el.innerHTML = '<div style="text-align:center;padding:48px 0;color:#6B7280;font-size:14px">还没有记录</div>'; return; }
   el.innerHTML = entries.map(e => {
     const tags = (e.analysis?.hrModules||[]).slice(0,3).map(m=>`<span class="tag">${m}</span>`).join('');
-    const insight = e.answers?.insight ? `<p style="font-size:13px;color:#6B7280;margin:6px 0 0;line-height:1.5">💡 ${e.answers.insight.slice(0,70)}</p>` : '';
-    const detailQs = QUESTIONS.map(q => e.answers?.[q.id] ? `<div class="detail-q">${q.label}</div><div class="detail-a">${e.answers[q.id]}</div>` : '').join('');
-    const aiBlock = e.analysis?.narrative ? `<div class="ai-card" style="margin-top:8px"><div style="font-size:11px;color:#4F46E5;font-weight:600;margin-bottom:6px">🤖 AI反馈</div><div style="font-size:13px;line-height:1.6">${e.analysis.narrative}</div>${e.analysis.tomorrow?`<div style="font-size:12px;color:#3D5A4C;font-weight:600;margin-top:6px">→ ${e.analysis.tomorrow}</div>`:''}</div>` : '';
+    const insight = e.answers?.insight?`<p style="font-size:13px;color:#6B7280;margin:6px 0 0;line-height:1.5">💡 ${e.answers.insight.slice(0,70)}</p>`:'';
+    const detailQs = QUESTIONS.map(q=>e.answers?.[q.id]?`<div style="font-size:11px;color:#6B7280;margin-bottom:2px">${q.label}</div><div style="font-size:13px;line-height:1.6;margin-bottom:10px;white-space:pre-wrap">${e.answers[q.id]}</div>`:'').join('');
+    const aiBlock = e.analysis?.narrative?`<div class="ai-card" style="margin-top:8px"><div style="font-size:11px;color:#4F46E5;font-weight:600;margin-bottom:6px">🤖 AI反馈</div><div style="font-size:13px;line-height:1.6">${e.analysis.narrative}</div>${e.analysis.tomorrow?`<div style="font-size:12px;color:#3D5A4C;font-weight:600;margin-top:6px">→ ${e.analysis.tomorrow}</div>`:''}</div>`:'';
     return `<div class="history-card" onclick="toggleHistory('${e.id}')">
-      <div class="history-meta">
-        <span style="font-weight:600;font-size:15px">${fmtDate(e.date)}</span>
-        <div style="display:flex;align-items:center;gap:8px">
-          ${e.analysis?.modeScore?`<span style="font-size:12px;color:#3D5A4C;font-weight:600">${e.analysis.modeScore}/10</span>`:''}
-          <span style="font-size:12px;color:#6B7280" id="arrow-${e.id}">▼</span>
-        </div>
-      </div>
+      <div class="history-meta"><span style="font-weight:600;font-size:15px">${fmtDate(e.date)}</span>
+      <div style="display:flex;align-items:center;gap:8px">${e.analysis?.modeScore?`<span style="font-size:12px;color:#3D5A4C;font-weight:600">${e.analysis.modeScore}/10</span>`:''}<span style="font-size:12px;color:#6B7280" id="arrow-${e.id}">▼</span></div></div>
       <div>${tags}</div>${insight}
       <div class="history-detail" id="detail-${e.id}">${detailQs}${aiBlock}</div>
     </div>`;
@@ -488,20 +512,19 @@ function renderInsights() {
   document.getElementById('insights-count').textContent = `基于 ${entries.length} 条复盘`;
   if (!entries.length) { el.innerHTML = '<div style="text-align:center;padding:48px 0;color:#6B7280;font-size:14px">完成复盘后这里会出现洞察</div>'; return; }
   const scores = entries.filter(e=>e.analysis?.modeScore).map(e=>e.analysis.modeScore);
-  const avg = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : null;
+  const avg = scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):null;
   const moduleCounts = {};
-  entries.forEach(e => (e.analysis?.hrModules||[]).forEach(m => { moduleCounts[m]=(moduleCounts[m]||0)+1; }));
+  entries.forEach(e=>(e.analysis?.hrModules||[]).forEach(m=>{moduleCounts[m]=(moduleCounts[m]||0)+1;}));
   const topMods = Object.entries(moduleCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
   let html = '';
   if (avg) {
-    const bars = scores.slice(-8).map((s,i) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div style="width:100%;height:${s*4}px;background:#3D5A4C;border-radius:3px;opacity:${0.4+(i/8)*0.6}"></div><span style="font-size:9px;color:#6B7280">${s}</span></div>`).join('');
-    html += `<div class="card"><div class="card-label">业务伙伴思维均分</div><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:${avg*10}%"></div></div><span class="score-label">${avg}/10</span></div>${scores.length>1?`<div style="display:flex;gap:6px;margin-top:12px;align-items:flex-end;height:48px">${bars}</div>`:''}</div>`;
+    const bars = scores.slice(-8).map((s,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div style="width:100%;height:${s*4}px;background:#3D5A4C;border-radius:3px;opacity:${0.4+(i/8)*0.6}"></div><span style="font-size:9px;color:#6B7280">${s}</span></div>`).join('');
+    html+=`<div class="card"><div class="card-label">业务伙伴思维均分</div><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:${avg*10}%"></div></div><span class="score-label">${avg}/10</span></div>${scores.length>1?`<div style="display:flex;gap:6px;margin-top:12px;align-items:flex-end;height:48px">${bars}</div>`:''}</div>`;
   }
   if (topMods.length) {
-    const mods = topMods.map(([m,c]) => `<div class="mod-bar-wrap"><div class="mod-bar-row"><span style="font-size:13px">${m}</span><span style="font-size:12px;color:#6B7280">${c}次</span></div><div class="mod-bar-bg"><div class="mod-bar-fill" style="width:${(c/entries.length)*100}%"></div></div></div>`).join('');
-    html += `<div class="card"><div class="card-label" style="margin-bottom:12px">HR模块分布</div>${mods}</div>`;
+    html+=`<div class="card"><div class="card-label" style="margin-bottom:12px">HR模块分布</div>${topMods.map(([m,c])=>`<div class="mod-bar-wrap"><div class="mod-bar-row"><span style="font-size:13px">${m}</span><span style="font-size:12px;color:#6B7280">${c}次</span></div><div class="mod-bar-bg"><div class="mod-bar-fill" style="width:${(c/entries.length)*100}%"></div></div></div>`).join('')}</div>`;
   }
-  el.innerHTML = html || '<div style="color:#6B7280;font-size:14px">数据积累中…</div>';
+  el.innerHTML = html||'<div style="color:#6B7280;font-size:14px">数据积累中…</div>';
 }
 
 // ── Board ──────────────────────────────────────────────────────────────────
@@ -509,22 +532,14 @@ function renderBoard() {
   const el = document.getElementById('board-content');
   if (!entries.length) { el.innerHTML = '<div style="text-align:center;padding:48px 0;color:#6B7280;font-size:14px">完成复盘后这里会出现你的HR知识地图</div>'; return; }
   const grouped = {};
-  entries.forEach(e => (e.analysis?.hrModules||[]).forEach(m => {
-    if (!grouped[m]) grouped[m] = [];
-    if (e.answers?.insight) grouped[m].push({date:e.date,text:e.answers.insight});
-  }));
+  entries.forEach(e=>(e.analysis?.hrModules||[]).forEach(m=>{if(!grouped[m])grouped[m]=[];if(e.answers?.insight)grouped[m].push({date:e.date,text:e.answers.insight});}));
   const patternCounts = {};
-  entries.forEach(e => (e.analysis?.patterns||[]).forEach(p => { patternCounts[p]=(patternCounts[p]||0)+1; }));
-  let html = Object.entries(grouped).sort((a,b)=>b[1].length-a[1].length).map(([mod,items],idx) => {
-    const [bg,color] = MOD_COLORS[idx%MOD_COLORS.length];
-    const itemsHtml = items.slice(0,3).map(item => `<div class="board-item" style="border-left-color:${bg}"><div class="board-date">${fmtShort(item.date)}</div><div style="font-size:13px;line-height:1.5">${item.text.slice(0,70)}${item.text.length>70?'…':''}</div></div>`).join('');
-    const more = items.length>3 ? `<div style="font-size:12px;color:#6B7280">还有 ${items.length-3} 条…</div>` : '';
-    return `<div class="board-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="background:${bg};color:${color};border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">${mod}</span><span style="font-size:12px;color:#6B7280">${items.length}条</span></div>${itemsHtml}${more}</div>`;
+  entries.forEach(e=>(e.analysis?.patterns||[]).forEach(p=>{patternCounts[p]=(patternCounts[p]||0)+1;}));
+  let html = Object.entries(grouped).sort((a,b)=>b[1].length-a[1].length).map(([mod,items],idx)=>{
+    const [bg,color]=MOD_COLORS[idx%MOD_COLORS.length];
+    return `<div class="board-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="background:${bg};color:${color};border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">${mod}</span><span style="font-size:12px;color:#6B7280">${items.length}条</span></div>${items.slice(0,3).map(item=>`<div class="board-item" style="border-left-color:${bg}"><div class="board-date">${fmtShort(item.date)}</div><div style="font-size:13px;line-height:1.5">${item.text.slice(0,70)}${item.text.length>70?'…':''}</div></div>`).join('')}${items.length>3?`<div style="font-size:12px;color:#6B7280">还有 ${items.length-3} 条…</div>`:''}</div>`;
   }).join('');
-  if (Object.keys(patternCounts).length) {
-    const patterns = Object.entries(patternCounts).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([p,c])=>`<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px">• ${p}</span><span style="font-size:11px;color:#6B7280">×${c}</span></div>`).join('');
-    html += `<div class="board-card"><div class="card-label" style="margin-bottom:10px">反复出现的行为模式</div>${patterns}</div>`;
-  }
+  if (Object.keys(patternCounts).length) html+=`<div class="board-card"><div class="card-label" style="margin-bottom:10px">反复出现的行为模式</div>${Object.entries(patternCounts).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([p,c])=>`<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px">• ${p}</span><span style="font-size:11px;color:#6B7280">×${c}</span></div>`).join('')}</div>`;
   el.innerHTML = html;
 }
 </script>
