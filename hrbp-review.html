@@ -78,6 +78,14 @@
       <button class="btn btn-primary" style="margin-top:12px;padding:12px 0;font-size:14px" onclick="saveApiKey()">保存</button>
     </div>
 
+    <div class="api-setup" id="sync-setup-home">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">🔗 设置同步码</div>
+      <input type="text" id="sync-code-input" placeholder="自己起一个专属暗号，比如 zhuowei2026" />
+      <div class="api-note">所有设备输入同一个同步码，记录就会互通。请设置一个别人猜不到的暗号。</div>
+      <div class="api-status" id="sync-status"></div>
+      <button class="btn btn-primary" style="margin-top:12px;padding:12px 0;font-size:14px" onclick="saveSyncCode()">保存同步码</button>
+    </div>
+
     <div id="home-stats"></div>
 
     <div style="display:flex;gap:10px;margin-bottom:12px">
@@ -195,9 +203,8 @@ const MOD_COLORS = [
 ];
 
 let entries = [];
-// stable user id stored in localStorage
-let userId = localStorage.getItem('hrbp-user-id');
-if (!userId) { userId = 'u_' + Math.random().toString(36).slice(2); localStorage.setItem('hrbp-user-id', userId); }
+// sync code = shared user id across devices
+let userId = localStorage.getItem('hrbp-sync-code') || '';
 
 // ── Init ───────────────────────────────────────────────────────────────────
 window.onload = async function() {
@@ -207,6 +214,14 @@ window.onload = async function() {
     document.getElementById('api-status').textContent = '✓ API Key 已设置';
     document.getElementById('api-status').className = 'api-status ok';
     document.getElementById('api-setup-home').style.display = 'none';
+  }
+  const savedSync = localStorage.getItem('hrbp-sync-code') || '';
+  if (savedSync) {
+    userId = savedSync;
+    document.getElementById('sync-code-input').value = savedSync;
+    document.getElementById('sync-status').textContent = '✓ 同步码已设置：' + savedSync;
+    document.getElementById('sync-status').className = 'api-status ok';
+    document.getElementById('sync-setup-home').style.display = 'none';
   }
   document.getElementById('form-date').textContent = new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
   renderFormQuestions();
@@ -236,8 +251,9 @@ async function sbFetch(path, options={}) {
 }
 
 async function loadEntries() {
+  if (!userId) { entries = []; updateHistoryCount(); return; }
   try {
-    const data = await sbFetch(`/rest/v1/entries?user_id=eq.${userId}&order=date.desc`, { method: 'GET', headers: { 'Prefer': '' } });
+    const data = await sbFetch(`/rest/v1/entries?user_id=eq.${encodeURIComponent(userId)}&order=date.desc`, { method: 'GET', headers: { 'Prefer': '' } });
     entries = data || [];
     updateHistoryCount();
   } catch(e) {
@@ -270,6 +286,19 @@ function saveApiKey() {
   document.getElementById('api-status').className = 'api-status ok';
   document.getElementById('api-setup-home').style.display = 'none';
   renderHomeStats();
+}
+
+async function saveSyncCode() {
+  const code = document.getElementById('sync-code-input').value.trim();
+  if (!code) return;
+  localStorage.setItem('hrbp-sync-code', code);
+  userId = code;
+  document.getElementById('sync-status').textContent = '✓ 同步码已保存！正在加载云端记录…';
+  document.getElementById('sync-status').className = 'api-status ok';
+  await loadEntries();
+  renderHomeStats();
+  document.getElementById('sync-status').textContent = '✓ 已同步！找到 ' + entries.length + ' 条记录';
+  setTimeout(() => { document.getElementById('sync-setup-home').style.display = 'none'; }, 1500);
 }
 
 async function callClaude(userMsg) {
@@ -445,7 +474,11 @@ async function saveEntry(answers, analysis) {
   const entry = { id: Date.now().toString(), date: new Date().toISOString(), answers, analysis };
   entries.unshift(entry);
   updateHistoryCount();
-  try { await saveEntryToCloud(entry); } catch(e) { console.error('Cloud save failed:', e); }
+  if (userId) {
+    try { await saveEntryToCloud(entry); } catch(e) { console.error('Cloud save failed:', e); alert('云端保存失败：' + e.message); }
+  } else {
+    alert('提示：还没设置同步码，这条记录只保存在本设备。在主页设置同步码后可跨设备同步。');
+  }
   return entry;
 }
 
