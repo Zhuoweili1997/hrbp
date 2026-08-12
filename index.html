@@ -410,13 +410,19 @@ async function handleVoice() {
   errEl.style.display = 'none';
   try {
     const lines = [
-      '你是HRBP成长教练。用户口述了今天工作情况如下：',
+      '你是一位有20年经验的CPO（首席人力官），曾在跨国公司领导HR转型，现在担任一位年轻HRBP的导师。她口述了今天的工作：',
       '',
       raw,
       '',
-      '请整理成结构化复盘，把执行者语言升级为业务伙伴语言。',
+      '请以CPO的高度整理成结构化复盘：',
+      '- tasks：重述她做的事，但用业务语言（这件事服务于什么业务目标）',
+      '- realProblem：穿透表面任务，指出真正的组织/业务问题（如组织能力缺口、治理问题、stakeholder错位）',
+      '- risk：从业务连续性、合规、雇主品牌、组织信任角度评估风险',
+      '- pattern：她的行为模式反映的思维层级（执行者/项目经理/业务伙伴/战略伙伴）',
+      '- insight：一个CPO会从今天的事中看到的最有价值的洞察',
+      '- upgradeNotes：把她的执行者语言升级成CHRO在管理层会议上会用的表达，格式"原表达→升级表达"',
       '只输出JSON对象，不要任何其他文字或markdown：',
-      '{"tasks":"...","realProblem":"...","risk":"...","pattern":"...","insight":"...","upgradeNotes":["升级点1","升级点2"]}',
+      '{"tasks":"...","realProblem":"...","risk":"...","pattern":"...","insight":"...","upgradeNotes":["原表达→升级表达"]}',
     ];
     const result = await callClaude(lines.join('\n'));
     const parsed = parseJSON(result);
@@ -456,12 +462,18 @@ async function saveVoiceReview() {
 async function analyzeSingle(answers) {
   const text = QUESTIONS.map(q => answers[q.id] ? `[${q.label}]\n${answers[q.id]}` : null).filter(Boolean).join('\n\n');
   const lines = [
-    '你是HRBP成长教练。以下是用户今天的复盘内容：',
+    '你是一位有20年经验的CPO（首席人力官），担任一位年轻HRBP的导师。她在Swisslog Healthcare负责德国/瑞士/北欧区域。以下是她今天的复盘：',
     '',
     text,
     '',
-    '请分析并只输出JSON，不要任何其他文字：',
-    '{"mode":"executor或partner","modeScore":数字1到10,"hrModules":["涉及HR模块，从以下选：Recruiting,Employee Relations,Compensation & Benefits,L&D,Workforce Planning,Stakeholder Management,Legal & Compliance,Onboarding,Performance Management,HRBP Strategy,Other"],"patterns":["行为模式最多3条"],"highlight":"最值得注意的时刻","tomorrow":"明天一个具体建议","narrative":"给用户反馈2到3句话像同事一样直接温暖"}',
+    '请从CPO和业务视角分析：',
+    '- modeScore评分标准：1-3=纯执行（完成任务）；4-5=项目管理（推进协调）；6-7=业务伙伴（诊断问题、影响决策）；8-10=战略伙伴（塑造组织能力、驱动业务结果）',
+    '- patterns：识别她的思维和行为模式，指出哪些在拉高/拉低她的层级',
+    '- highlight：今天最能体现（或最错失）业务伙伴价值的时刻',
+    '- tomorrow：一个明天就能做的具体动作，能让她在stakeholder眼中的定位升一级',
+    '- narrative：像一位真正关心她成长的CPO导师，直接、具体、不客套。指出她自己看不到的盲区。2-4句话。',
+    '只输出JSON，不要任何其他文字：',
+    '{"mode":"executor或partner","modeScore":数字1到10,"hrModules":["涉及HR模块，从以下选：Recruiting,Employee Relations,Compensation & Benefits,L&D,Workforce Planning,Stakeholder Management,Legal & Compliance,Onboarding,Performance Management,HRBP Strategy,Other"],"patterns":["模式最多3条"],"highlight":"...","tomorrow":"...","narrative":"..."}',
   ];
   const raw = await callClaude(lines.join('\n'));
   const parsed = parseJSON(raw);
